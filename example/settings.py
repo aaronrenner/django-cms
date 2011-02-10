@@ -66,8 +66,11 @@ MIDDLEWARE_CLASSES = (
     'cms.middleware.user.CurrentUserMiddleware',
     'cms.middleware.page.CurrentPageMiddleware',
     'cms.middleware.toolbar.ToolbarMiddleware',
-    
 )
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False
+}
 
 ROOT_URLCONF = 'example.urls'
 
@@ -98,7 +101,7 @@ INSTALLED_APPS = (
     'cms.plugins.inherit',
     'mptt',
     'example.sampleapp',
-    'south',
+    'south'
 )
 
 gettext = lambda s: s

@@ -1,6 +1,6 @@
 # Django settings for cms project.
 import os
-PROJECT_DIR = os.path.dirname(__file__)
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -32,6 +32,8 @@ CMS_MEDIA_ROOT = os.path.join(PROJECT_DIR, '../../cms/media/cms/')
 MEDIA_URL = '/media/'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 FIXTURE_DIRS = [os.path.join(PROJECT_DIR, 'fixtures')]
 
@@ -99,6 +101,9 @@ INSTALLED_APPS = (
     'mptt',
     'testapp.sampleapp',
     'testapp.placeholderapp',
+    'testapp.pluginapp',
+    'testapp.pluginapp.plugins.manytomany_rel',
+    'testapp.fakemlng',
     'south',
     'reversion',
 )
@@ -108,10 +113,11 @@ gettext = lambda s: s
 LANGUAGE_CODE = "en"
 
 LANGUAGES = (
+    ('en', gettext('English')),
     ('fr', gettext('French')),
     ('de', gettext('German')),
-    ('en', gettext('English')),
     ('pt-BR', gettext("Brazil")),
+    ('nl', gettext("Dutch")),
 )
 
 CMS_LANGUAGE_CONF = {
@@ -120,8 +126,9 @@ CMS_LANGUAGE_CONF = {
 }
 
 CMS_SITE_LANGUAGES = {
-    1:['fr','de','en','pt-BR'],
-    2:['de','en'],
+    1:['en','de','fr','pt-BR'],
+    2:['de','fr'],
+    3:['nl'],
 }
 
 APPEND_SLASH = True
@@ -136,18 +143,26 @@ CMS_TEMPLATES = (
 
 CMS_PLACEHOLDER_CONF = {
     'col_sidebar': {
-        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin', 'TextPlugin', 'SnippetPlugin'),
+        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin',
+                    'TextPlugin', 'SnippetPlugin'),
         'name': gettext("sidebar column")
     },                    
                         
     'col_left': {
-        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin', 'TextPlugin', 'SnippetPlugin','GoogleMapPlugin',),
+        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin',
+                    'TextPlugin', 'SnippetPlugin','GoogleMapPlugin',),
         'name': gettext("left column")
     },                  
                         
     'col_right': {
-        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin', 'TextPlugin', 'SnippetPlugin','GoogleMapPlugin',),
+        'plugins': ('FilePlugin', 'FlashPlugin', 'LinkPlugin', 'PicturePlugin',
+                    'TextPlugin', 'SnippetPlugin','GoogleMapPlugin',),
         'name': gettext("right column")
+    },
+    'extra_context': {
+        "plugins": ('TextPlugin',),
+        "extra_context": {"width": 250},
+        "name": "extra context"
     },
 }
 
@@ -161,20 +176,19 @@ CMS_MENU_TITLE_OVERWRITE = True
 CMS_HIDE_UNTRANSLATED = False
 CMS_URL_OVERWRITE = True
 
+CMS_PLUGIN_PROCESSORS = tuple()
+
+CMS_PLUGIN_CONTEXT_PROCESSORS = tuple()
+
 SOUTH_TESTS_MIGRATE = False
+
+CMS_NAVIGATION_EXTENDERS = (
+    ('testapp.sampleapp.menu_extender.get_nodes', 'SampleApp Menu'),
+)
 
 try:
     from local_settings import *
 except ImportError:
     pass
-
-# set xmlrunner as test runner if available
-try:
-    import xmlrunner
-except ImportError:
-    xmlrunner = None
     
-if xmlrunner:
-    TEST_RUNNER = 'testapp.testrunner.DjangoXMLTestRunner'
-else:
-    TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
+TEST_RUNNER = 'testapp.testrunner.CMSTestSuiteRunner'
